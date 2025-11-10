@@ -30,28 +30,36 @@ async function run() {
     try {
         await client.connect();
         const db = client.db('wealthWaveDB')
-        const wealthsCollection = db.collection('transaction');
+        const wealthsCollection = db.collection('transactions');
 
-        app.get('/transaction', async (req, res) => {
-            const cursor = wealthsCollection.find();
+        app.get('/transactions', async (req, res) => {
+            // const projectFields = { type: 1, category: 1, amount: 1, date: 1 }//hero1@gmail.com
+            console.log(req.query)
+            const email = req.query.email;
+            const query = {}
+            if (email) {
+                query.email = email;
+            }
+
+            const cursor = wealthsCollection.find(query).sort({ date: -1 });
             const result = await cursor.toArray();
             res.send(result);
         })
 
-        app.get('/transaction/:id', async (req, res) => {
+        app.get('/transactions/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await wealthsCollection.findOne(query);
             res.send(result);
         })
 
-        app.post('/transaction', async (req, res) => {
+        app.post('/transactions', async (req, res) => {
             const newTransaction = req.body;
             const result = await wealthsCollection.insertOne(newTransaction);
             res.send(result);
         })
 
-        app.patch('/transaction/:id', async (req, res) => {
+        app.patch('/transactions/:id', async (req, res) => {
             const id = req.params.id;
             const updatedTransaction = req.body;
             const query = { _id: new ObjectId(id) }
@@ -67,7 +75,7 @@ async function run() {
 
         })
 
-        app.delete('/transaction/:id', async (req, res) => {
+        app.delete('/transactions/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await wealthsCollection.deleteOne(query);
