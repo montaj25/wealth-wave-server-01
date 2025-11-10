@@ -32,6 +32,18 @@ async function run() {
         const db = client.db('wealthWaveDB')
         const wealthsCollection = db.collection('transaction');
 
+        app.get('/transaction', async (req, res) => {
+            const cursor = wealthsCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get('/transaction/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await wealthsCollection.findOne(query);
+            res.send(result);
+        })
 
         app.post('/transaction', async (req, res) => {
             const newTransaction = req.body;
@@ -41,8 +53,18 @@ async function run() {
 
         app.patch('/transaction/:id', async (req, res) => {
             const id = req.params.id;
+            const updatedTransaction = req.body;
             const query = { _id: new ObjectId(id) }
-            
+            const update = {
+                $set: {
+                    name: updatedTransaction.name,
+                    amount: updatedTransaction.amount
+                }
+            }
+
+            const result = await wealthsCollection.updateOne(query, update)
+            res.send(result)
+
         })
 
         app.delete('/transaction/:id', async (req, res) => {
