@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 console.log(process.env)
@@ -29,7 +29,29 @@ app.get('/', (req, res) => {
 async function run() {
     try {
         await client.connect();
-        
+        const db = client.db('wealthWaveDB')
+        const wealthsCollection = db.collection('transaction');
+
+
+        app.post('/transaction', async (req, res) => {
+            const newTransaction = req.body;
+            const result = await wealthsCollection.insertOne(newTransaction);
+            res.send(result);
+        })
+
+        app.patch('/transaction/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            
+        })
+
+        app.delete('/transaction/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await wealthsCollection.deleteOne(query);
+            res.send(result)
+        })
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
