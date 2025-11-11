@@ -11,7 +11,6 @@ app.use(cors());
 app.use(express.json())
 
 
-// const uri = "mongodb+srv://wealthWaveUserOne:6d5VnBwUOkZA1VTx@cluster0.imaa7iu.mongodb.net/?appName=Cluster0";
 const uri = `mongodb+srv://${process.env.WW_USER}:${process.env.WW_PASS}@cluster0.imaa7iu.mongodb.net/?appName=Cluster0`;
 
 const client = new MongoClient(uri, {
@@ -31,6 +30,23 @@ async function run() {
         await client.connect();
         const db = client.db('wealthWaveDB')
         const wealthsCollection = db.collection('transactions');
+        const usersCollection = db.collection('users');
+
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            const email = req.body.email;
+            const query = { email: email }
+            const existingUser = await usersCollection.findOne(query)
+            if (existingUser) {
+                res.send({Message: 'user already exits. do not need to insert again'})
+            }
+            else {
+                const result = await usersCollection.insertOne(newUser);
+                res.send(result)
+            }
+
+        })
+
 
         app.get('/transactions', async (req, res) => {
             // const projectFields = { type: 1, category: 1, amount: 1, date: 1 }//hero1@gmail.com
