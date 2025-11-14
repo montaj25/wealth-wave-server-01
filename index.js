@@ -38,7 +38,7 @@ async function run() {
             const query = { email: email }
             const existingUser = await usersCollection.findOne(query)
             if (existingUser) {
-                res.send({Message: 'user already exits. do not need to insert again'})
+                res.send({ Message: 'user already exits. do not need to insert again' })
             }
             else {
                 const result = await usersCollection.insertOne(newUser);
@@ -75,7 +75,7 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/transactions/:id', async (req, res) => {
+        app.patch('/updatedTransaction/:id', async (req, res) => {
             const id = req.params.id;
             const updatedTransaction = req.body;
             const query = { _id: new ObjectId(id) }
@@ -87,6 +87,7 @@ async function run() {
             }
 
             const result = await wealthsCollection.updateOne(query, update)
+            console.log(result)
             res.send(result)
 
         })
