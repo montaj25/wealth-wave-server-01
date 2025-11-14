@@ -75,14 +75,18 @@ async function run() {
             res.send(result);
         })
 
-        app.patch('/updatedTransaction/:id', async (req, res) => {
+        app.patch('/transactions/:id', async (req, res) => {
             const id = req.params.id;
             const updatedTransaction = req.body;
             const query = { _id: new ObjectId(id) }
             const update = {
                 $set: {
                     name: updatedTransaction.name,
-                    amount: updatedTransaction.amount
+                    amount: updatedTransaction.amount,
+                    description: updatedTransaction.description,
+                    type: updatedTransaction.type,
+                    category: updatedTransaction.category,
+                    date: updatedTransaction.date,
                 }
             }
 
