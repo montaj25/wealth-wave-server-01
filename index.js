@@ -33,32 +33,35 @@ async function run() {
         const usersCollection = db.collection('users');
 
         app.post('/users', async (req, res) => {
-            try {
-                const newUser = req.body;
-                if (!newUser.email) {
-                    return res.status(400).send({ error: "email is required" })
-                }
-                const email = req.body.email;
-                const query = { email: email }
-                const existingUser = await usersCollection.findOne(query)
-                if (existingUser) {
-                    return res.status(200).send({
-                        Message: 'user already exits.',
-                        existed: true,
-                        user: existingUser
-                    })
-                }
-                const result = await usersCollection.insertOne(newUser);
-                return res.status(201).send({
-                    message: 'user save successfully',
-                    inserted: true,
-                    user: result
-                });
-            } catch (error) {
-                console.log(error)
-                return res.status(500).send({ error: "server error saving user" })
+            const newUser = req.body;
+            const exists = await usersCollection.findOne({ email: newUser.email })
+            if (exists) {
+                return res.send({ message: "User already exists" })
             }
+            if (newUser.googleUser === true) {
+                await usersCollection.insertOne(newUser);
+                return res.send({ message: "Google user saved", user: newUser });
+            }
+
+            await usersCollection.insertOne(newUser);
+            res.send({ message: "user register" })
         });
+
+        app.post('/login', async (req, res) => {
+            const { email } = req.body;
+            if (!email) {
+                return res.send({ error: "email required" })
+            }
+            const user = await usersCollection.findOne({ email });
+            if (!user) {
+                return res.send({ error: 'user not found in database' });
+            }
+
+            res.send({
+                message: "Login Successfully",
+                user
+            })
+        })
 
 
         app.get('/transactions', async (req, res) => {
