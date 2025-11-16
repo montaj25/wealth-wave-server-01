@@ -33,19 +33,32 @@ async function run() {
         const usersCollection = db.collection('users');
 
         app.post('/users', async (req, res) => {
-            const newUser = req.body;
-            const email = req.body.email;
-            const query = { email: email }
-            const existingUser = await usersCollection.findOne(query)
-            if (existingUser) {
-                res.send({ Message: 'user already exits. do not need to insert again' })
-            }
-            else {
+            try {
+                const newUser = req.body;
+                if (!newUser.email) {
+                    return res.status(400).send({ error: "email is required" })
+                }
+                const email = req.body.email;
+                const query = { email: email }
+                const existingUser = await usersCollection.findOne(query)
+                if (existingUser) {
+                    return res.status(200).send({
+                        Message: 'user already exits.',
+                        existed: true,
+                        user: existingUser
+                    })
+                }
                 const result = await usersCollection.insertOne(newUser);
-                res.send(result)
+                return res.status(201).send({
+                    message: 'user save successfully',
+                    inserted: true,
+                    user: result
+                });
+            } catch (error) {
+                console.log(error)
+                return res.status(500).send({ error: "server error saving user" })
             }
-
-        })
+        });
 
 
         app.get('/transactions', async (req, res) => {
