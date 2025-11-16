@@ -81,8 +81,22 @@ async function run() {
         app.get('/transactions/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
-            const result = await wealthsCollection.findOne(query);
-            res.send(result);
+            try {
+                const transaction = await wealthsCollection.findOne(query);
+                if (!transaction) {
+                    return res.send({ error: "transaction not found" })
+                }
+                const sameCategoryTransactions = await wealthsCollection.find({ category: transaction.category }).toArray();
+                let categoryTotal = 0;
+                sameCategoryTransactions.forEach(t => {
+                    categoryTotal += parseFloat(t.amount);
+                })
+                console.log(categoryTotal)
+                res.send({ ...transaction, categoryTotal })
+            }
+            finally {
+
+            }
         })
 
         app.post('/transactions', async (req, res) => {
